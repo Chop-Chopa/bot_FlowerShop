@@ -67,7 +67,8 @@ class Order(models.Model):
         Product,
         on_delete=models.CASCADE,
         null=True,
-        blank=True
+        blank=True,
+        related_name="orders"
     )
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="new")
     created_at = models.DateTimeField(auto_now_add=True)
