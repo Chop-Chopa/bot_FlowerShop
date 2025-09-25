@@ -24,12 +24,11 @@ class Category(models.Model):
 
 class Product(models.Model):
     name = models.CharField(max_length=100, verbose_name='Название букета')
-    category = models.ForeignKey(
+    categories = models.ManyToManyField(
         Category,
-        on_delete=models.SET_NULL,
         verbose_name='Категория букета',
         blank=True,
-        null=True
+        related_name='products',
     )
     price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Цена')
     image = models.ImageField()
@@ -66,6 +65,7 @@ class Order(models.Model):
     product = models.ForeignKey(
         Product,
         on_delete=models.CASCADE,
+        related_name="orders",
         null=True,
         blank=True
     )
