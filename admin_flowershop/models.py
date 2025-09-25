@@ -28,7 +28,8 @@ class Product(models.Model):
         Category,
         on_delete=models.SET_NULL,
         verbose_name='Категория букета',
-        blank = True
+        blank=True,
+        null=True
     )
     price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Цена')
     image = models.ImageField()
@@ -37,7 +38,6 @@ class Product(models.Model):
     composition = models.TextField(blank=True, null=True, verbose_name='Цветочный состав')
     color_themes = models.ManyToManyField(
         ColorTheme,
-        null=True,
         blank=True,
         related_name="products"
     )
