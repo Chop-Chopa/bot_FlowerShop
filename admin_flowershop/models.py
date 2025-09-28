@@ -1,5 +1,6 @@
 from django.db import models
 
+
 class ColorTheme(models.Model):
     name = models.CharField(max_length=100, verbose_name='Цветовая гамма')
 
@@ -11,6 +12,7 @@ class ColorTheme(models.Model):
     def __str__(self):
         return self.name
 
+
 class Category(models.Model):
     name = models.CharField(max_length=100, verbose_name='Категория букета')
 
@@ -21,6 +23,7 @@ class Category(models.Model):
 
     def __str__(self):
         return self.name
+
 
 class Product(models.Model):
     name = models.CharField(max_length=100, verbose_name='Название букета')
