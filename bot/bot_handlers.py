@@ -10,6 +10,7 @@ from bot_menu_constants import (
 )
 from find_flower_func import find_flower
 from admin_flowershop.models import Product
+from order_utils import create_order_from_context
 
 
 load_dotenv()
@@ -82,6 +83,8 @@ def handle_choose_price(update, context, param=None):
         prefix = "Извините, мы не нашли букет по вашим запросам.\n"
     else:
         prefix = ""
+
+    context.user_data['product_id'] = bouquet.id
 
     color_names = ", ".join(ct.name for ct in bouquet.color_themes.all()) or "—"
 
@@ -250,6 +253,8 @@ def handle_ask_phone(update, context, param=None):
 
         bouquet = qs_random[random.randrange(total)]
 
+    context.user_data['product_id'] = bouquet.id
+
     color_names = ", ".join(ct.name for ct in bouquet.color_themes.all()) or "—"
 
     caption = (
@@ -341,20 +346,31 @@ def handle_get_user_data_choice(update, context, param=None):
             reply_markup=build_keyboard('choose_occasion', OCCASIONS)
         )
     else:
+        user_id = query.from_user.id
+        try:
+            order = create_order_from_context(user_id, context.user_data)
+        except Exception as e:
+            print("Ошибка при создании заказа:", e)
+            query.edit_message_text(
+                text="Произошла ошибка при оформлении заказа. Попробуйте снова позже."
+            )
+            return
+
         courier_chat_id = os.environ['COURIER_CHAT_ID']
         courier_text = (
-            f"Новый заказ!\n"
-            f"Клиент: {context.user_data['name']};\n"
-            f"Адрес: {context.user_data['address']};\n"
-            f"Время: {context.user_data['date_time']}.\n"
+            f"Новый заказ #{order.id}!\n"
+            f"Клиент: {order.name};\n"
+            f"Телефон: {order.phone_number};\n"
+            f"Адрес: {order.address};\n"
+            f"Время: {order.delivery_date};\n"
+            f"Букет: {order.product.name if order.product else '—'}.\n"
         )
-
         context.bot.send_message(chat_id=courier_chat_id, text=courier_text)
 
         query.edit_message_text(
-            text=f"Уважаемый {context.user_data['name']}"
-                f" Ваш заказ успешно сформирован, ожидайте доставку"
-                f" {context.user_data['date_time']}"
-                f" по адресу {context.user_data['address']}.\n\n"
-                f"Пожалуйста, выберите действие из меню или нажмите /start."
+            text=(f"Уважаемый {order.name}, ваш заказ №{order.id} успешно оформлен! 🌸\n"
+                  f"Ожидайте доставку {order.delivery_date} по адресу {order.address}.\n\n"
+                  "Спасибо, что выбрали Flower Shop!")
         )
+
+        context.user_data.clear()
